@@ -214,7 +214,7 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
                                 descriptor[i*2+7] += b_grad_mag[b_i][b_j]
             n_descriptor = descriptor / np.linalg.norm(descriptor)
             features.append(n_descriptor)
-        features = np.asarray(features)
+        features = np.squeeze(np.asarray(features))
 
     return features
 
@@ -258,10 +258,8 @@ def match_features(im1_features, im2_features):
 
     # These are placeholders - replace with your matches and confidences!
     matches = np.random.randint(0, min(len(im1_features), len(im2_features)), size=(50, 2))
-    im1_features = np.squeeze(im1_features)
-    im2_features = np.squeeze(im2_features)
 
-    A = np.sum(im1_features*im1_features, axis=1).reshape(-1, 1) + np.transpose(np.sum(im2_features*im2_features, axis=1)).reshape(1, -1)
+    A = np.sum(im1_features**2, axis=1).reshape(-1, 1) + np.sum(im2_features**2, axis=1).reshape(1, -1)
     B = 2 * (im1_features @ np.transpose(im2_features))
     distances = np.sqrt(A - B)
 
