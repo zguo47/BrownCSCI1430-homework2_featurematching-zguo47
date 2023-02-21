@@ -71,16 +71,16 @@ def get_feature_points(image, window_width):
     # STEP 2: Apply Gaussian filter with appropriate sigma.
     # STEP 3: Calculate Harris cornerness score for all pixels.
     # STEP 4: Peak local max to eliminate clusters. (Try different parameters.)
-    alpha = 0.05
+    alpha = 0.06
     edges_y = filters.sobel_h(image)
     edges_x = filters.sobel_v(image)
     I_x_sqrt = edges_x * edges_x
     I_y_sqrt = edges_y * edges_y
-    g_I_x_sqrt = filters.gaussian(I_x_sqrt, sigma=0.7)
-    g_I_y_sqrt = filters.gaussian(I_y_sqrt, sigma=0.7)
-    g_Ixy = filters.gaussian(I_x_sqrt * I_y_sqrt, sigma=0.7)
+    g_I_x_sqrt = filters.gaussian(I_x_sqrt, sigma=1)
+    g_I_y_sqrt = filters.gaussian(I_y_sqrt, sigma=1)
+    g_Ixy = filters.gaussian(I_x_sqrt * I_y_sqrt, sigma=1)
     cornerness = g_I_x_sqrt * g_I_y_sqrt - g_Ixy ** 2 - alpha * (g_I_x_sqrt + g_I_y_sqrt) ** 2
-    local_max = feature.peak_local_max(cornerness, min_distance=15, threshold_rel=0.01, exclude_border=10)
+    local_max = feature.peak_local_max(cornerness, min_distance=15, threshold_abs=0, threshold_rel=0.005, exclude_border=10)
     xs = local_max[:, 1]
     ys = local_max[:, 0]
 
@@ -271,7 +271,7 @@ def match_features(im1_features, im2_features):
     s_nearest_features = sorted_distances[:, 1]
     ratios = nearest_features / s_nearest_features
 
-    thresholded_ratios_indices = np.where(ratios < 0.75)[0]
+    thresholded_ratios_indices = np.where(ratios < 0.8)[0]
     matches = np.hstack((thresholded_ratios_indices.reshape(-1, 1), sorted_features[thresholded_ratios_indices].reshape(-1, 1)))
 
     
