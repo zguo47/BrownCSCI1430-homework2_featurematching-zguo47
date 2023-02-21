@@ -19,6 +19,10 @@ def plot_feature_points(image, x, y):
     '''
 
     # TODO: Your implementation here! See block comments and the homework webpage for instructions
+    plt.imshow(image)
+    plt.scatter(x, y)
+
+    plt.show()
 
 def get_feature_points(image, window_width):
     '''
@@ -66,6 +70,19 @@ def get_feature_points(image, window_width):
     # STEP 2: Apply Gaussian filter with appropriate sigma.
     # STEP 3: Calculate Harris cornerness score for all pixels.
     # STEP 4: Peak local max to eliminate clusters. (Try different parameters.)
+    alpha = 0.05
+    edges_y = filters.sobel_h(image)
+    edges_x = filters.sobel_v(image)
+    I_x_sqrt = edges_x * edges_x
+    I_y_sqrt = edges_y * edges_y
+    g_I_x_sqrt = filters.gaussian(I_x_sqrt, sigma=0.4)
+    g_I_y_sqrt = filters.gaussian(I_y_sqrt, sigma=0.4)
+    g_Ixy = filters.gaussian(I_x_sqrt * I_y_sqrt, sigma=0.4)
+    cornerness = g_I_x_sqrt * g_I_y_sqrt - g_Ixy ** 2 - alpha * (g_I_x_sqrt + g_I_y_sqrt) ** 2
+    local_max = feature.peak_local_max(cornerness, min_distance=15, threshold_rel=0.15, exclude_border=10)
+    xs = local_max[:, 1]
+    ys = local_max[:, 0]
+
 
     return xs, ys
 
@@ -152,6 +169,13 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
     # STEP 4: Now for each cell, we have a 8-dimensional vector. Appending the vectors in the 4x4 cells,
     #         we have a 128-dimensional feature.
     # STEP 5: Don't forget to normalize your feature.
+    if mode == "patch":
+        features = []
+        for i, j in zip(x_array, y_array):
+            patch = image[i - window_width//2 : i + window_width//2, j - window_width//2 : j + window_width//2]
+            patch = np.flatten(patch)
+            features.append(patch)
+        features = np.asarray(features)
 
 
     return features
