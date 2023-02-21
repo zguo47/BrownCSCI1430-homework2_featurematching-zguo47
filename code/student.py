@@ -173,7 +173,7 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
         features = []
         for i, j in zip(x_array, y_array):
             patch = image[i - window_width//2 : i + window_width//2, j - window_width//2 : j + window_width//2]
-            patch = np.flatten(patch)
+            patch = np.asarray(patch).flatten()
             features.append(patch)
         features = np.asarray(features)
 
