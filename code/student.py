@@ -184,11 +184,13 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
         grad_mag = np.sqrt(grad_x **2 + grad_y **2)
         grad_ori = np.arctan2(grad_y, grad_x)
         
+        x_array = np.clip(x_array, window_width//2, image.shape[1]-window_width//2)
+        y_array = np.clip(y_array, window_width//2, image.shape[0]-window_width//2)
         features = []
         for i, j in zip(y_array, x_array):
             descriptor = np.zeros((128, 1))
-            w_grad_ori = grad_ori[i : i + window_width, j : j + window_width]
-            w_grad_mag = grad_mag[i : i + window_width, j : j + window_width]
+            w_grad_ori = grad_ori[i - window_width//2 : i + window_width//2, j - window_width//2 : j + window_width//2]
+            w_grad_mag = grad_mag[i - window_width//2 : i + window_width//2, j - window_width//2 : j + window_width//2]
             for i in range(0, 16, 4):
                 for j in range(0, 16, 4):
                     b_grad_ori = w_grad_ori[i:i+4, j:j+4]
@@ -197,21 +199,21 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
                         for b_j in range(4):
                             ori = b_grad_ori[b_i][b_j]
                             if -math.pi < ori <= (-3/4)*math.pi:
-                                descriptor[i*2+0] += b_grad_mag[b_i][b_j]
+                                descriptor[i*8+j*2+0] += b_grad_mag[b_i][b_j]
                             elif (-3/4)*math.pi < ori <= (-1/2)*math.pi:
-                                descriptor[i*2+1] += b_grad_mag[b_i][b_j]
+                                descriptor[i*8+j*2+1] += b_grad_mag[b_i][b_j]
                             elif (-1/2)*math.pi < ori <= (-1/4)*math.pi:
-                                descriptor[i*2+2] += b_grad_mag[b_i][b_j]
+                                descriptor[i*8+j*2+2] += b_grad_mag[b_i][b_j]
                             elif (-1/4)*math.pi < ori <= 0:
-                                descriptor[i*2+3] += b_grad_mag[b_i][b_j]
+                                descriptor[i*8+j*2+3] += b_grad_mag[b_i][b_j]
                             elif 0 < ori <= (1/4)*math.pi:
-                                descriptor[i*2+4] += b_grad_mag[b_i][b_j]
+                                descriptor[i*8+j*2+4] += b_grad_mag[b_i][b_j]
                             elif (1/4)*math.pi < ori <= (1/2)*math.pi:
-                                descriptor[i*2+5] += b_grad_mag[b_i][b_j]
+                                descriptor[i*8+j*2+5] += b_grad_mag[b_i][b_j]
                             elif (1/2)*math.pi < ori <= (3/4)*math.pi:
-                                descriptor[i*2+6] += b_grad_mag[b_i][b_j]
+                                descriptor[i*8+j*2+6] += b_grad_mag[b_i][b_j]
                             elif (3/4)*math.pi < ori <= math.pi:
-                                descriptor[i*2+7] += b_grad_mag[b_i][b_j]
+                                descriptor[i*8+j*2+7] += b_grad_mag[b_i][b_j]
             n_descriptor = descriptor / np.linalg.norm(descriptor)
             features.append(n_descriptor)
         features = np.squeeze(np.asarray(features))
