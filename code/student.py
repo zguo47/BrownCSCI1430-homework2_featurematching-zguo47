@@ -80,7 +80,7 @@ def get_feature_points(image, window_width):
     g_I_y_sqrt = filters.gaussian(I_y_sqrt, sigma=1)
     g_Ixy = filters.gaussian(I_x_sqrt * I_y_sqrt, sigma=1)
     cornerness = g_I_x_sqrt * g_I_y_sqrt - g_Ixy ** 2 - alpha * (g_I_x_sqrt + g_I_y_sqrt) ** 2
-    local_max = feature.peak_local_max(cornerness, min_distance=15, threshold_abs=0, threshold_rel=0.005, exclude_border=10)
+    local_max = feature.peak_local_max(cornerness, min_distance=15, threshold_abs=0, threshold_rel=0.005, exclude_border=20)
     xs = local_max[:, 1]
     ys = local_max[:, 0]
 
@@ -173,7 +173,7 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
     if mode == "patch":
         features = []
         for i, j in zip(y_array, x_array):
-            patch = image[i - window_width//2 : i + window_width//2, j - window_width//2 : j + window_width//2]
+            patch = image[i : i + window_width, j : j + window_width]
             patch = np.asarray(patch).flatten()
             features.append(patch)
         features = np.asarray(features)
@@ -212,8 +212,8 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
                                 descriptor[i*2+6] += b_grad_mag[b_i][b_j]
                             else:
                                 descriptor[i*2+7] += b_grad_mag[b_i][b_j]
-            # n_descriptor = descriptor / np.linalg.norm(descriptor)
-            features.append(descriptor)
+            n_descriptor = descriptor / np.linalg.norm(descriptor)
+            features.append(n_descriptor)
         features = np.squeeze(np.asarray(features))
 
     return features
