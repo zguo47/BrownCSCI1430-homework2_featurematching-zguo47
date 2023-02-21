@@ -76,11 +76,11 @@ def get_feature_points(image, window_width):
     edges_x = filters.sobel_v(image)
     I_x_sqrt = edges_x * edges_x
     I_y_sqrt = edges_y * edges_y
-    g_I_x_sqrt = filters.gaussian(I_x_sqrt, sigma=0.4)
-    g_I_y_sqrt = filters.gaussian(I_y_sqrt, sigma=0.4)
-    g_Ixy = filters.gaussian(I_x_sqrt * I_y_sqrt, sigma=0.4)
+    g_I_x_sqrt = filters.gaussian(I_x_sqrt, sigma=0.7)
+    g_I_y_sqrt = filters.gaussian(I_y_sqrt, sigma=0.7)
+    g_Ixy = filters.gaussian(I_x_sqrt * I_y_sqrt, sigma=0.7)
     cornerness = g_I_x_sqrt * g_I_y_sqrt - g_Ixy ** 2 - alpha * (g_I_x_sqrt + g_I_y_sqrt) ** 2
-    local_max = feature.peak_local_max(cornerness, min_distance=15, threshold_rel=0.15, exclude_border=10)
+    local_max = feature.peak_local_max(cornerness, min_distance=15, threshold_rel=0.01, exclude_border=10)
     xs = local_max[:, 1]
     ys = local_max[:, 0]
 
@@ -172,7 +172,7 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
     # STEP 5: Don't forget to normalize your feature.
     if mode == "patch":
         features = []
-        for i, j in zip(x_array, y_array):
+        for i, j in zip(y_array, x_array):
             patch = image[i - window_width//2 : i + window_width//2, j - window_width//2 : j + window_width//2]
             patch = np.asarray(patch).flatten()
             features.append(patch)
@@ -271,7 +271,7 @@ def match_features(im1_features, im2_features):
     s_nearest_features = sorted_distances[:, 1]
     ratios = nearest_features / s_nearest_features
 
-    thresholded_ratios_indices = np.where(ratios < 0.8)[0]
+    thresholded_ratios_indices = np.where(ratios < 0.75)[0]
     matches = np.hstack((thresholded_ratios_indices.reshape(-1, 1), sorted_features[thresholded_ratios_indices].reshape(-1, 1)))
 
     
