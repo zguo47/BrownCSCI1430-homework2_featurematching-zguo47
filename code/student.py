@@ -212,8 +212,8 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
                                 descriptor[i*2+6] += b_grad_mag[b_i][b_j]
                             else:
                                 descriptor[i*2+7] += b_grad_mag[b_i][b_j]
-            n_descriptor = descriptor / np.linalg.norm(descriptor)
-            features.append(n_descriptor)
+            # n_descriptor = descriptor / np.linalg.norm(descriptor)
+            features.append(descriptor)
         features = np.squeeze(np.asarray(features))
 
     return features
