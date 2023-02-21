@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage import filters, feature
@@ -177,6 +178,43 @@ def get_feature_descriptors(image, x_array, y_array, window_width, mode):
             features.append(patch)
         features = np.asarray(features)
 
+    else:
+        grad_y = filters.sobel_h(image)
+        grad_x = filters.sobel_v(image)
+        grad_mag = np.sqrt(grad_x **2 + grad_y **2)
+        grad_ori = np.arctan2(grad_y, grad_x)
+        
+        features = []
+        for i, j in zip(y_array, x_array):
+            descriptor = np.zeros((128, 1))
+            w_grad_ori = grad_ori[i - window_width//2 : i + window_width//2, j - window_width//2 : j + window_width//2]
+            w_grad_mag = grad_mag[i - window_width//2 : i + window_width//2, j - window_width//2 : j + window_width//2]
+            for i in range(0, 16, 4):
+                for j in range(0, 16, 4):
+                    b_grad_ori = w_grad_ori[i:i+4, j:j+4]
+                    b_grad_mag = w_grad_mag[i:i+4, j:j+4]
+                    for b_i in range(4):
+                        for b_j in range(4):
+                            ori = b_grad_ori[b_i][b_j]
+                            if -math.pi <= ori < (-3/4)*math.pi:
+                                descriptor[i*2+0] += b_grad_mag[b_i][b_j]
+                            elif (-3/4)*math.pi <= ori < (-1/2)*math.pi:
+                                descriptor[i*2+1] += b_grad_mag[b_i][b_j]
+                            elif (-1/2)*math.pi <= ori < (-1/4)*math.pi:
+                                descriptor[i*2+2] += b_grad_mag[b_i][b_j]
+                            elif (-1/4)*math.pi <= ori < 0:
+                                descriptor[i*2+3] += b_grad_mag[b_i][b_j]
+                            elif 0 <= ori < (1/4)*math.pi:
+                                descriptor[i*2+4] += b_grad_mag[b_i][b_j]
+                            elif (1/4)*math.pi <= ori < (1/2)*math.pi:
+                                descriptor[i*2+5] += b_grad_mag[b_i][b_j]
+                            elif (1/2)*math.pi <= ori < (3/4)*math.pi:
+                                descriptor[i*2+6] += b_grad_mag[b_i][b_j]
+                            else:
+                                descriptor[i*2+7] += b_grad_mag[b_i][b_j]
+            n_descriptor = descriptor / np.linalg.norm(descriptor)
+            features.append(n_descriptor)
+        features = np.asarray(features)
 
     return features
 
@@ -220,6 +258,22 @@ def match_features(im1_features, im2_features):
 
     # These are placeholders - replace with your matches and confidences!
     matches = np.random.randint(0, min(len(im1_features), len(im2_features)), size=(50, 2))
+    im1_features = np.squeeze(im1_features)
+    im2_features = np.squeeze(im2_features)
+
+    A = np.sum(im1_features*im1_features, axis=1).reshape(-1, 1) + np.transpose(np.sum(im2_features*im2_features, axis=1)).reshape(1, -1)
+    B = 2 * (im1_features @ np.transpose(im2_features))
+    distances = np.sqrt(A - B)
+
+    sorted_distances = np.sort(distances)
+    sorted_features = np.argsort(distances, axis=1)[:, 0]
+    nearest_features = sorted_distances[:, 0]
+    s_nearest_features = sorted_distances[:, 1]
+    ratios = nearest_features / s_nearest_features
+
+    thresholded_ratios_indices = np.where(ratios < 0.8)[0]
+    matches = np.hstack((thresholded_ratios_indices.reshape(-1, 1), sorted_features[thresholded_ratios_indices].reshape(-1, 1)))
+
     
     # STEP 1: Calculate the distances between each pairs of features between im1_features and im2_features.
     #         HINT: https://browncsci1430.github.io/webpage/hw2_featurematching/efficient_sift/
