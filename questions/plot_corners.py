@@ -24,7 +24,7 @@ from skimage import io, color, transform
 from skimage.feature import corner_harris, peak_local_max
 
 # load in different images to see where the Harris Corner Detector finds corners
-image = transform.rescale(color.rgb2gray(io.imread("LaddObservatory1.jpg")),0.25)
+image = transform.rescale(color.rgb2gray(io.imread("../questions/images/LaddObservatory2.jpg")),0.25)
 
 harris_response = corner_harris(image)
 # Note: Feel free to play with these parameters to investigate their effects

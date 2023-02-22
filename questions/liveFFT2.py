@@ -158,16 +158,16 @@ class live_FFT2():
         
         # Just the central dot
         amplitude = np.zeros(self.im.shape)
-        # a = np.fft.fftshift(amplitude)
+        a = np.fft.fftshift(amplitude)
         
         # NOTE: [0,0] here is the 0-th frequency component around which all other frequencies oscillate
         amplitude[0,0] = 40000
         
-        # amplitude = np.fft.fftshift(a)
+        amplitude = np.fft.fftshift(a)
 
         # Part 0: Scanning the basis and looking at the reconstructed image for each frequency independently
         # ==================================================================================================
-        '''
+
         # To see the effect, uncomment this block, read throug the comments and code, and then execute the program.
         
         # Let's begin by zeroing out the amplitude and phase.
@@ -193,14 +193,13 @@ class live_FFT2():
         amplitude = np.fft.fftshift(a)
 
         # Note the reconstructed image (top right) as we light up different basis frequencies.
-        '''
+
         
         # Part 1: Reconstructing from different numbers of basis frequencies
         # ==================================================================
-        '''
         # What if we set some frequency amplitudes to zero, but vary
         # over time which ones we set?
-
+        '''
         # Make a square mask over the amplitude image
         Y, X = np.ogrid[:height, :width]
         # Suppress frequencies less than cutoff distance
@@ -219,23 +218,22 @@ class live_FFT2():
         
         self.frequencyCutoffDist += self.frequencyCutoffDirection
         '''
-
         # Part 2: Replacing amplitude / phase with that of another image
         # ==============================================================
-        '''
+
         imJack = cv2.resize( self.imJack, self.im.shape )
         imJackFFT = np.fft.fft2( imJack )
         amplitudeJack = np.sqrt( np.power( imJackFFT.real, 2 ) + np.power( imJackFFT.imag, 2 ) )
         phaseJack = np.arctan2( imJackFFT.imag, imJackFFT.real )
         
         # Comment in either or both of these
-        #amplitude = amplitudeJack
-        #phase = phaseJack
-        '''
+        # amplitude = amplitudeJack
+        phase = phaseJack
+
 
         # Part 3: Replacing amplitude / phase with that of a noisy image
         # ==============================================================
-        '''
+
         # Generate some noise
         self.uniform_noise = np.random.uniform( 0, 1, self.im.shape )
         imNoiseFFT = np.fft.fft2( self.uniform_noise )
@@ -243,15 +241,14 @@ class live_FFT2():
         phaseNoise = np.arctan2( imNoiseFFT.imag, imNoiseFFT.real )
         
         # Comment in either or both of these
-        #amplitude = amplitudeNoise
-        #phase = phaseNoise
-        '''
+        amplitude = amplitudeNoise
+        # phase = phaseNoise
+
 
         # Part 4: Understanding amplitude and phase
         # =========================================
-        '''
         # Play with the images. What can you discover?
-        
+
         # Zero out phase?
         phase = np.zeros( self.im.shape ) # + 0.5 * phase
 
@@ -267,16 +264,15 @@ class live_FFT2():
         phase -= np.pi
 
         # Rotate whole image? Together? Individually?
-        phase = np.rot90(phase)
-        amplitude = np.rot90(amplitude)
+        # phase = np.rot90(phase)
+        # amplitude = np.rot90(amplitude)
         
         # Are these manipulations meaningful?
         # What other manipulations might we perform?
-        '''
 
         # Part 5: Reconstruct the original image
         # ======================================
-        
+
         # I need to build a new real+imaginary number from the amplitude / phase
         # This is going from polar coordinates to Cartesian coordinates in the complex number space
         recReal = np.cos( phase ) * amplitude
@@ -294,9 +290,9 @@ class live_FFT2():
         
         # NOTE: One student's software crashed at this line without casting to uint8,
         # but this operation via img_as_ubyte is _slow_. Add this back in if your code crashes.
-        #cv2.imshow(self.wn, output)
+        cv2.imshow(self.wn, output)
         #cv2.imshow(self.wn, img_as_ubyte(output))
-        cv2.imshow(self.wn, (output*255).astype(np.uint8)) # faster alternative
+        # cv2.imshow(self.wn, (output*255).astype(np.uint8)) # faster alternative
         
         cv2.waitKey(1)
 
