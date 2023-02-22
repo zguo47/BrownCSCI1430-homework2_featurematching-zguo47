@@ -23,6 +23,7 @@ def plot_feature_points(image, x, y):
     plt.imshow(image)
     plt.scatter(x, y)
 
+
     plt.show()
 
 def get_feature_points(image, window_width):
